@@ -76,4 +76,4 @@ def method_not_allowed_handler(error):
 if __name__ == "__main__":
     create_database()  # Ensure the database exists
     initialize_tables()  # Create tables
-    app.run(debug=True)
+    app.run(host ="0.0.0.0",port = 8080,debug=True)
