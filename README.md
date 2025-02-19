@@ -16,7 +16,6 @@ To connect to your remote Ubuntu server, use the following command:
 ```bash
 ssh -i ~/.ssh/doo root@69.55.54.138
 ```
-
 Once connected, open another terminal window on your local machine and send your zip file and setup script to the server:
 ```bash
 scp -i ~/.ssh/doo /Users/manasvini/webapp-main root@69.55.54.138:
