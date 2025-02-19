@@ -9,6 +9,22 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+          MYSQL_ROOT_PASSWORD: root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u test_user --password=test_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,5 +38,20 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run tests
-        run: pytest tests/healthcheck_test.py
+      - name: Set environment variables
+        run: |
+          echo "DATABASE_URL=mysql+pymysql://test_user:test_password@127.0.0.1:3306/test_db" >> $GITHUB_ENV
+
+      - name: Wait for MySQL to be ready
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -u test_user --password=test_password --silent; do
+            echo "Waiting for database connection..."
+            sleep 5
+          done
+
+      - name: Run database migrations
+        run: |
+          python manage.py db upgrade || echo "No migrations needed"
+
+      - name: Run tests with verbose output
+        run: pytest -vv --capture=no tests/healthcheck_test.py
