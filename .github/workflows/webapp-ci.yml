@@ -13,17 +13,12 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_DATABASE: test_db
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: test_password
-          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -u test_user --password=test_password"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
 
     steps:
       - name: Checkout repository
@@ -40,11 +35,23 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "DATABASE_URL=mysql+pymysql://test_user:test_password@127.0.0.1:3306/test_db" >> $GITHUB_ENV
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> $GITHUB_ENV
+          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
+          echo "DATABASE_URL=mysql+pymysql://${{ secrets.MYSQL_USER }}:${{ secrets.MYSQL_PASSWORD }}@127.0.0.1:3306/${{ secrets.MYSQL_DATABASE }}" >> $GITHUB_ENV
+
+      - name: Verify Secrets (Debugging)
+        run: |
+          echo "MYSQL_DATABASE: $MYSQL_DATABASE"
+          echo "MYSQL_USER: $MYSQL_USER"
+          echo "MYSQL_PASSWORD: [HIDDEN]"
+          echo "MYSQL_ROOT_PASSWORD: [HIDDEN]"
+          echo "DATABASE_URL: $DATABASE_URL"
 
       - name: Wait for MySQL to be ready
         run: |
-          until mysqladmin ping -h 127.0.0.1 -u test_user --password=test_password --silent; do
+          until mysqladmin ping -h 127.0.0.1 -u $MYSQL_USER --password=$MYSQL_PASSWORD --silent; do
             echo "Waiting for database connection..."
             sleep 5
           done
