@@ -1,0 +1,65 @@
+name: Packer Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_packer_image:
+    name: Build Packer Image for AWS and GCP
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: latest
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update && sudo apt-get install -y awscli
+
+      - name: Install GCP CLI
+        run: |
+          sudo apt-get install -y google-cloud-sdk
+
+      - name: Authenticate AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region us-east-1
+
+      - name: Authenticate GCP CLI
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" | base64 --decode > gcp-key.json
+          gcloud auth activate-service-account --key-file=gcp-key.json
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Run Integration Tests
+        run: |
+          echo "Running integration tests..."
+          # Add integration test commands here
+
+      - name: Build Application Artifact
+        run: |
+          echo "Building application artifact..."
+          # Replace with actual build commands, e.g.:
+          # mvn package -DskipTests (for Java)
+          # npm install && npm run build (for Node.js)
+          # python setup.py sdist (for Python)
+          zip -r webapp.zip .
+
+      - name: Initialize Packer
+        run: packer init .
+
+      - name: Build Packer Image for AWS and GCP
+        run: |
+          packer build -var "aws_region=us-east-1" -var "gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" .

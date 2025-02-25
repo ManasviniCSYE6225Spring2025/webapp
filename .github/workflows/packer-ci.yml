@@ -1,0 +1,33 @@
+name: Packer Status Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  packer_format_validate:
+    name: Check Packer Formatting and Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: latest
+
+      - name: Run Packer Format Check
+        id: fmt
+        run: |
+          packer fmt -check .
+        continue-on-error: false
+
+      - name: Run Packer Validate
+        id: validate
+        run: |
+          packer init .
+          packer validate .
+        continue-on-error: false
