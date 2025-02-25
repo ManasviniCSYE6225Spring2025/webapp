@@ -49,7 +49,7 @@ variable "network" {
 }
 
 variable "ssh_username" {
-  default = "ubuntu" 
+  default = "ubuntu"
 }
 
 variable "gcp_ssh_username" {
@@ -69,20 +69,20 @@ source "amazon-ebs" "aws_image" {
 
 # GCP Machine Image Source Configuration
 source "googlecompute" "gcp_image" {
-  project_id           = var.gcp_project_id
-  source_image_family  = "ubuntu-2404-lts-amd64"
-  image_name           = "csye6225-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
-  zone                 = var.gcp_zone
-  disk_size            = var.disk_size
-  network              = var.network
-  communicator         = "ssh"
-  ssh_username         = var.gcp_ssh_username
+  project_id            = var.gcp_project_id
+  source_image_family   = "ubuntu-2404-lts-amd64"
+  image_name            = "csye6225-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
+  zone                  = var.gcp_zone
+  disk_size             = var.disk_size
+  network               = var.network
+  communicator          = "ssh"
+  ssh_username          = var.gcp_ssh_username
   service_account_email = "githubactions@csye6225-dev-451700.iam.gserviceaccount.com"
-  tags = ["default-allow-ssh"]
+  tags                  = ["default-allow-ssh"]
 }
 
 build {
-  sources = ["source.amazon-ebs.aws_image","source.googlecompute.gcp_image"]
+  sources = ["source.amazon-ebs.aws_image", "source.googlecompute.gcp_image"]
 
   provisioner "file" {
     source      = "webapp.zip"
