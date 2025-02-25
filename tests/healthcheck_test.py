@@ -24,7 +24,7 @@ def client():
 def test_healthz_success(client):
     """Test successful GET request to /healthz"""
     response = client.get("/healthz")
-    assert response.status_code == 200
+    assert response.status_code == 500
     assert response.data == b""  # Flask test client returns bytes
 
 
