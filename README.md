@@ -9,6 +9,7 @@ Before proceeding, ensure you have the following:
 
 ---
 
+
 ## Connecting to the Droplet
 To connect to your remote Ubuntu server, use the following command:
 ```bash
