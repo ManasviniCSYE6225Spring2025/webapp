@@ -1,0 +1,7 @@
+db_name = "cloudApplication"
+db_user = "root"
+db_pass = "manasvini"
+app_dir = "/opt/csye6225"
+app_group = "appgroup"
+app_user = "appuser"
+app_zip = "webapp.zip"
