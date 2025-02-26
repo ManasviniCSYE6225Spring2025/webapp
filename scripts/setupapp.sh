@@ -9,6 +9,7 @@ APP_DIR="/opt/csye6225"
 APP_GROUP="appgroup"
 APP_USER="appuser"
 APP_ZIP="webapp.zip"
+APP_PASSWORD="manasvini"
 
 # Ensure script runs as root
 if [[ $EUID -ne 0 ]]; then
