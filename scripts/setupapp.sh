@@ -10,6 +10,7 @@ APP_GROUP="appgroup"
 APP_USER="appuser"
 APP_ZIP="webapp.zip"
 APP_PASSWORD="manasvini"
+APP_DB="cloudApplication"
 
 # Ensure script runs as root
 if [[ $EUID -ne 0 ]]; then
@@ -50,6 +51,20 @@ systemctl enable mysql && systemctl start mysql
 # mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_PASS';"
 # mysql -u root -e "FLUSH PRIVILEGES;"
 # Ensure all required variables are set
+
+# Define MySQL credentials (Ensure these are set)
+DB_PASS="${DB_PASS:-manasvini}"               # Root password for MySQL (set a default if empty)
+APP_DB="${APP_DB:-cloudApplication}"          # Database name (default: cloudApplication)
+APP_USER="${APP_USER:-appuser}"               # Application user (default: appuser)
+APP_PASSWORD="${APP_PASSWORD:-manasvini}"  # Application user password (default value)
+
+# Debug: Print MySQL environment variable values
+echo "🔍 Checking MySQL Environment Variables..."
+echo "   DB_PASS: [SET]" # Avoid printing the actual password for security
+echo "   APP_DB: $APP_DB"
+echo "   APP_USER: $APP_USER"
+echo "   APP_PASSWORD: [SET]" # Avoid printing the actual password
+
 if [[ -z "$DB_PASS" || -z "$APP_DB" || -z "$APP_USER" || -z "$APP_PASSWORD" ]]; then
     echo "❌ Error: One or more MySQL environment variables are empty."
     exit 1
