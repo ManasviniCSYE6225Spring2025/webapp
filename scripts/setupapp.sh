@@ -93,7 +93,7 @@ else
 fi
 
 # Change to extracted directory (handling possible variations in folder name)
-cd "$APP_DIR"/webapp || { echo "Error: Webapp folder not found"; exit 1; }
+cd "$APP_DIR" || { echo "Error: Webapp folder not found"; exit 1; }
 
 # Setup virtual environment
 echo "Setting up virtual environment..."
