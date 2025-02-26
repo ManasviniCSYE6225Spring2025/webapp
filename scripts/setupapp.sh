@@ -54,8 +54,19 @@ if [ -z "$DB_PASS" ]; then
     exit 1
 fi
 
-mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_PASS';"
-mysql -u root -e "FLUSH PRIVILEGES;"
+mysql -u root <<EOF
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_PASS';
+FLUSH PRIVILEGES;
+EOF
+
+# Create application database and user
+echo "🛢️ Creating database and application user..."
+mysql -u root -p"$DB_PASS" <<EOF
+CREATE DATABASE IF NOT EXISTS $APP_DB;
+CREATE USER IF NOT EXISTS '$APP_USER'@'localhost' IDENTIFIED WITH mysql_native_password BY '$APP_PASSWORD';
+GRANT ALL PRIVILEGES ON $APP_DB.* TO '$APP_USER'@'localhost';
+FLUSH PRIVILEGES;
+EOF
 
 # Create the database
 echo "Creating database: $DB_NAME..."
