@@ -75,7 +75,7 @@ mkdir -p $APP_DIR
 chown -R $APP_USER:$APP_GROUP $APP_DIR
 chmod -R 750 $APP_DIR
 sudo mv /tmp/webapp.zip /opt/csye6225
-
+sudo cp /tmp/myapp.service /etc/systemd/system/myapp.service
 echo "zip moved"
 pwd
 

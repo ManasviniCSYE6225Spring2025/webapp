@@ -5,9 +5,13 @@ After=network.target
 [Service]
 User=csye6225
 Group=csye6225
-WorkingDirectory=/opt/myapp
-ExecStart=/usr/bin/python3 /opt/myapp/app.py
+WorkingDirectory=/opt/csye6225/
+ExecStart=/usr/bin/python3.8 /opt/csye6225/app.py
 Restart=always
+RestartSec=3
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=csye6225
 
 [Install]
 WantedBy=multi-user.target
