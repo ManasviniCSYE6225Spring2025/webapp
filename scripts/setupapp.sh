@@ -94,7 +94,7 @@ groupadd -f $APP_GROUP
 
 # Create a new Linux user for the application
 echo "Creating application user: $APP_USER..."
-id -u $APP_USER &>/dev/null || useradd -m -g $APP_GROUP -s /bin/bash $APP_USER
+id -u $APP_USER &>/dev/null || useradd -r -g $APP_GROUP -s /usr/sbin/nologin $APP_USER
 
 # Setup application directory
 echo "Setting up application directory: $APP_DIR..."
