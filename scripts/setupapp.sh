@@ -49,9 +49,9 @@ systemctl enable mysql && systemctl start mysql
 # echo "Configuring MySQL root user..."
 # mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_PASS';"
 # mysql -u root -e "FLUSH PRIVILEGES;"
-echo "Configuring MySQL root user..."
-if [ -z "$DB_PASS" ]; then
-    echo "Error: DB_PASS is empty. Exiting."
+# Ensure all required variables are set
+if [[ -z "$DB_PASS" || -z "$APP_DB" || -z "$APP_USER" || -z "$APP_PASSWORD" ]]; then
+    echo "❌ Error: One or more MySQL environment variables are empty."
     exit 1
 fi
 
