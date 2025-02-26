@@ -29,7 +29,7 @@ variable "instance_type" {
 }
 
 variable "disk_size" {
-  default = 100
+  default = 25
 }
 
 variable "gcp_machine_type" {
