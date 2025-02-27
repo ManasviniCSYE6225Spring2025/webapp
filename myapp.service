@@ -3,8 +3,8 @@ Description=My Python App
 After=network.target
 
 [Service]
-User=csye6225
-Group=csye6225
+User=appuser
+Group=appgroup
 WorkingDirectory=/opt/csye6225/
 ExecStart=/opt/csye6225/menv/bin/python /opt/csye6225/app.py
 Restart=always
