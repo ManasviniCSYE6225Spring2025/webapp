@@ -35,13 +35,17 @@ apt update -y && apt upgrade -y
 # Install required packages
 echo "Installing required packages..."
 export DEBIAN_FRONTEND=noninteractive  # Suppress password prompt
-apt install -y mysql-server python3 python3-pip python3-venv unzip pkg-config libmysqlclient-dev
+apt install -y mysql-server python3 python3-pip python3-venv unzip pkg-config libmysqlclient-dev nginx
 
 # Check if installations were successful
 check_package "mysql"
 check_package "python3"
 check_package "pip3"
 check_package "unzip"
+
+# Start and enable nginx
+sudo systemctl enable nginx
+sudo systemctl start nginx
 
 # Start and enable MySQL
 systemctl enable mysql && systemctl start mysql
@@ -90,11 +94,11 @@ mysql -u root -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
 
 # Create a new Linux group for the application
 echo "Creating application group: $APP_GROUP..."
-sudo groupadd -f $APP_GROUP
+sudo groupadd --system "$APP_GROUP"
 
 # Create a new Linux user for the application
 echo "Creating application user: $APP_USER..."
-id -u $APP_USER &>/dev/null || sudo useradd -r -g $APP_GROUP -s /usr/sbin/nologin $APP_USER
+id -u $APP_USER &>/dev/null || sudo useradd --system --gid "$APP_GROUP" --home "$APP_DIR" -s /usr/sbin/nologin $APP_USER
 
 # Setup application directory
 echo "Setting up application directory: $APP_DIR..."
@@ -128,9 +132,6 @@ source menv/bin/activate || { echo "Error: Virtual environment activation failed
 # Install dependencies
 echo "Installing Python dependencies..."
 pip install --no-cache-dir -r requirements.txt
-
-echo "Setting up permissions..."
-sudo chown -R appuser:appgroup /opt/csye6225/
 
 echo "Setting up myapp..."
 sudo systemctl daemon-reload
