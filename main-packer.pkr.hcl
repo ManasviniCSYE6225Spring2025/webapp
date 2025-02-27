@@ -111,7 +111,7 @@ build {
 
   provisioner "shell" {
     inline = [
-      "echo -e 'chown'"
+      "echo -e 'chown'",
       "sudo chown -R appuser:appgroup /opt/csye6225/"
     ]
   }
