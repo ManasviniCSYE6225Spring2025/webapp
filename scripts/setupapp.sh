@@ -125,6 +125,8 @@ echo "Setting up virtual environment..."
 python3 -m venv menv
 source menv/bin/activate || { echo "Error: Virtual environment activation failed"; exit 1; }
 
+echo "Setting up permissions..."
+sudo chown -R appuser:appgroup /opt/csye6225/
 # Install dependencies
 echo "Installing Python dependencies..."
 pip install --no-cache-dir -r requirements.txt
