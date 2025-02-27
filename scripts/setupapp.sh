@@ -90,15 +90,15 @@ mysql -u root -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
 
 # Create a new Linux group for the application
 echo "Creating application group: $APP_GROUP..."
-groupadd -f $APP_GROUP
+sudo groupadd -f $APP_GROUP
 
 # Create a new Linux user for the application
 echo "Creating application user: $APP_USER..."
-id -u $APP_USER &>/dev/null || useradd -r -g $APP_GROUP -s /usr/sbin/nologin $APP_USER
+id -u $APP_USER &>/dev/null || sudo useradd -r -g $APP_GROUP -s /usr/sbin/nologin $APP_USER
 
 # Setup application directory
 echo "Setting up application directory: $APP_DIR..."
-mkdir -p $APP_DIR
+sudo mkdir -p $APP_DIR
 sudo chown -R $APP_USER:$APP_GROUP $APP_DIR
 sudo chmod -R 750 $APP_DIR
 sudo mv /tmp/webapp.zip /opt/csye6225
@@ -137,5 +137,8 @@ sudo systemctl daemon-reload
 sudo systemctl enable myapp
 sudo systemctl start myapp
 sudo systemctl restart myapp
+
+echo "Setting up permissions..."
+sudo chown -R appuser:appgroup /opt/csye6225/
 
 echo "Setup completed successfully!"
