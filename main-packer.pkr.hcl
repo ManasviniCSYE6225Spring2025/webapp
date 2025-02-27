@@ -109,13 +109,6 @@ build {
     ]
   }
 
-  provisioner "shell" {
-    inline = [
-      "echo -e 'chown'",
-      "sudo chown -R appuser:appgroup /opt/csye6225/"
-    ]
-  }
-
   # Post-processing (manifest output)
   post-processor "manifest" {
     output = "image_manifest.json"
