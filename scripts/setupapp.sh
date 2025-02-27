@@ -99,8 +99,8 @@ id -u $APP_USER &>/dev/null || useradd -r -g $APP_GROUP -s /usr/sbin/nologin $AP
 # Setup application directory
 echo "Setting up application directory: $APP_DIR..."
 mkdir -p $APP_DIR
-chown -R $APP_USER:$APP_GROUP $APP_DIR
-chmod -R 750 $APP_DIR
+sudo chown -R $APP_USER:$APP_GROUP $APP_DIR
+sudo chmod -R 750 $APP_DIR
 sudo mv /tmp/webapp.zip /opt/csye6225
 sudo cp /tmp/myapp.service /etc/systemd/system/myapp.service
 echo "zip moved"
@@ -113,8 +113,6 @@ ls
 echo "Extracting application files..."
 if [ -f "$APP_ZIP" ]; then
     unzip -o "$APP_ZIP" -d "$APP_DIR"
-    chown -R $APP_USER:$APP_GROUP "$APP_DIR"
-    chmod -R 750 "$APP_DIR"
 else
     echo "Warning: Application ZIP file not found! Skipping extraction."
 fi
@@ -130,10 +128,5 @@ source menv/bin/activate || { echo "Error: Virtual environment activation failed
 # Install dependencies
 echo "Installing Python dependencies..."
 pip install --no-cache-dir -r requirements.txt
-
-# Change ownership to the application user
-echo "Updating permissions..."
-chown -R $APP_USER:$APP_GROUP "$APP_DIR"
-chmod -R 750 "$APP_DIR"
 
 echo "Setup completed successfully!"
