@@ -133,6 +133,15 @@ source menv/bin/activate || { echo "Error: Virtual environment activation failed
 echo "Installing Python dependencies..."
 pip install --no-cache-dir -r requirements.txt
 
+# Create an empty .env file
+touch /opt/csye6225/.env
+
+    # Ensure correct ownership and permissions
+sudo chown appuser:appgroup /opt/csye6225/.env
+sudo chmod 640 /opt/csye6225/.env
+
+echo ".env file created and permissions set."
+
 echo "Setting up myapp..."
 sudo systemctl daemon-reload
 sudo systemctl enable myapp
