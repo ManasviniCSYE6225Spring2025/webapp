@@ -97,7 +97,7 @@ build {
 
   # Copy setup script to the instance
   provisioner "file" {
-    source      = "scripts/setupapp.sh"
+    source      = "/setupapp.sh"
     destination = "/tmp/setupapp.sh"
   }
 
@@ -113,4 +113,4 @@ build {
   post-processor "manifest" {
     output = "image_manifest.json"
   }
-}   
+}
