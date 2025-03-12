@@ -7,6 +7,8 @@ Before proceeding, ensure you have the following:
 - Python 3 installed
 - MySQL installed
 
+
+
 ---
 
 ## Connecting to the Droplet
