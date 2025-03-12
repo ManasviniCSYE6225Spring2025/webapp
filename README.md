@@ -75,6 +75,8 @@ Save and exit (`CTRL+X`, then `Y` and `Enter`).
 
 ---
 
+
+
 ## Starting the Application
 After setting up the environment, run the application:
 ```bash
