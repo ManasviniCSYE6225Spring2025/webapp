@@ -113,4 +113,5 @@ build {
   post-processor "manifest" {
     output = "image_manifest.json"
   }
+
 }
