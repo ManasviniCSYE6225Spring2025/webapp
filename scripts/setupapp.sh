@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # # Variables (Modify as needed)
-DB_TYPE="mysql"   # Change to "postgresql" or "mariadb" if needed
-DB_NAME="cloudApplication"
-DB_USER="root"
-DB_PASS="manasvini"  # Set root password for MySQL
+# DB_TYPE="mysql"   # Change to "postgresql" or "mariadb" if needed
+# DB_NAME="cloudApplication"
+# DB_USER="root"
+# DB_PASS="manasvini"  # Set root password for MySQL
 APP_DIR="/opt/csye6225"
 APP_GROUP="appgroup"
 APP_USER="appuser"
 APP_ZIP="webapp.zip"
-APP_PASSWORD="manasvini"
-APP_DB="cloudApplication"
+# APP_PASSWORD="manasvini"
+# APP_DB="cloudApplication"
 
 # Ensure script runs as root
 if [[ $EUID -ne 0 ]]; then
@@ -35,20 +35,20 @@ apt update -y && apt upgrade -y
 # Install required packages
 echo "Installing required packages..."
 export DEBIAN_FRONTEND=noninteractive  # Suppress password prompt
-apt install -y mysql-server python3 python3-pip python3-venv unzip pkg-config libmysqlclient-dev nginx
+apt install -y python3 python3-pip python3-venv unzip pkg-config 
 
 # Check if installations were successful
-check_package "mysql"
+# check_package "mysql"
 check_package "python3"
 check_package "pip3"
 check_package "unzip"
 
 # Start and enable nginx
-sudo systemctl enable nginx
-sudo systemctl start nginx
+# sudo systemctl enable nginx
+# sudo systemctl start nginx
 
 # Start and enable MySQL
-systemctl enable mysql && systemctl start mysql
+# systemctl enable mysql && systemctl start mysql
 
 # Secure MySQL root user and allow password authentication
 # echo "Configuring MySQL root user..."
@@ -57,40 +57,40 @@ systemctl enable mysql && systemctl start mysql
 # Ensure all required variables are set
 
 # Define MySQL credentials (Ensure these are set)
-DB_PASS="${DB_PASS:-manasvini}"               # Root password for MySQL (set a default if empty)
-APP_DB="${APP_DB:-cloudApplication}"          # Database name (default: cloudApplication)
-APP_USER="${APP_USER:-appuser}"               # Application user (default: appuser)
-APP_PASSWORD="${APP_PASSWORD:-manasvini}"  # Application user password (default value)
+# DB_PASS="${DB_PASS:-manasvini}"               # Root password for MySQL (set a default if empty)
+# APP_DB="${APP_DB:-cloudApplication}"          # Database name (default: cloudApplication)
+# APP_USER="${APP_USER:-appuser}"               # Application user (default: appuser)
+# APP_PASSWORD="${APP_PASSWORD:-manasvini}"  # Application user password (default value)
 
 # Debug: Print MySQL environment variable values
-echo "🔍 Checking MySQL Environment Variables..."
-echo "   DB_PASS: [SET]" # Avoid printing the actual password for security
-echo "   APP_DB: $APP_DB"
-echo "   APP_USER: $APP_USER"
-echo "   APP_PASSWORD: [SET]" # Avoid printing the actual password
+# echo "🔍 Checking MySQL Environment Variables..."
+# echo "   DB_PASS: [SET]" # Avoid printing the actual password for security
+# echo "   APP_DB: $APP_DB"
+# echo "   APP_USER: $APP_USER"
+# echo "   APP_PASSWORD: [SET]" # Avoid printing the actual password
 
-if [[ -z "$DB_PASS" || -z "$APP_DB" || -z "$APP_USER" || -z "$APP_PASSWORD" ]]; then
-    echo "❌ Error: One or more MySQL environment variables are empty."
-    exit 1
-fi
+# if [[ -z "$DB_PASS" || -z "$APP_DB" || -z "$APP_USER" || -z "$APP_PASSWORD" ]]; then
+#     echo "❌ Error: One or more MySQL environment variables are empty."
+#     exit 1
+# fi
 
-mysql -u root <<EOF
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_PASS';
-FLUSH PRIVILEGES;
-EOF
+# mysql -u root <<EOF
+# ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_PASS';
+# FLUSH PRIVILEGES;
+# EOF
 
 # Create application database and user
-echo "🛢️ Creating database and application user..."
-mysql -u root -p"$DB_PASS" <<EOF
-CREATE DATABASE IF NOT EXISTS $APP_DB;
-CREATE USER IF NOT EXISTS '$APP_USER'@'localhost' IDENTIFIED WITH mysql_native_password BY '$APP_PASSWORD';
-GRANT ALL PRIVILEGES ON $APP_DB.* TO '$APP_USER'@'localhost';
-FLUSH PRIVILEGES;
-EOF
+# echo "🛢️ Creating database and application user..."
+# mysql -u root -p"$DB_PASS" <<EOF
+# CREATE DATABASE IF NOT EXISTS $APP_DB;
+# CREATE USER IF NOT EXISTS '$APP_USER'@'localhost' IDENTIFIED WITH mysql_native_password BY '$APP_PASSWORD';
+# GRANT ALL PRIVILEGES ON $APP_DB.* TO '$APP_USER'@'localhost';
+# FLUSH PRIVILEGES;
+# EOF
 
 # Create the database
-echo "Creating database: $DB_NAME..."
-mysql -u root -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
+# echo "Creating database: $DB_NAME..."
+# mysql -u root -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
 
 # Create a new Linux group for the application
 echo "Creating application group: $APP_GROUP..."
