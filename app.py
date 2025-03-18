@@ -8,6 +8,7 @@ import os
 user = os.getenv("DB_USER")
 password = os.getenv("DB_PASSWORD")
 host = os.getenv("DB_HOST")
+db_name = os.getenv("DB_NAME")
 
 # Flask app setup
 app = Flask(__name__)
@@ -16,15 +17,15 @@ db.init_app(app)
 
 # Function to create the database if it doesn't exist
 def create_database():
-    db_name = "cloudApplication"
-    engine = create_engine(f"mysql+pymysql://{user}:{password}@{host}")
+    # db_name = "cloudApplication"
+    engine = create_engine(f"mysql+pymysql://{user}:{password}@{host}/{db_name}")
     #engine = create_engine(f"mysql+pymysql://{user}:{password}@{host}:3306/cloud_native_app", pool_recycle=1800,pool_pre_ping=True)
 
     with engine.connect() as connection:
         existing_databases = connection.execute(text("SHOW DATABASES;"))
-        if db_name not in [row[0] for row in existing_databases]:
-            connection.execute(text(f"CREATE DATABASE {db_name}"))
-            print(f"Database {db_name} created successfully!")
+        # if db_name not in [row[0] for row in existing_databases]:
+        #     connection.execute(text(f"CREATE DATABASE {db_name}"))
+        #     print(f"Database {db_name} created successfully!")
 
 # Function to initialize tables
 def initialize_tables():
