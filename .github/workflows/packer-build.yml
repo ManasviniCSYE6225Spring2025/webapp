@@ -72,9 +72,15 @@ jobs:
 
       - name: Pass the AMI to Demo in AWS
         run: |
-          AMI_NAME=$(jq -r '.builds[0].name' manifest.json)
-          echo "AMI ID: $AMI_ID" 
+          AMI_ID=$(jq -r '[.builds[] | select(.builder_type=="amazon-ebs")] | max_by(.build_time) | .artifact_id' image_manifest.json | cut -d':' -f2)
 
+          if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "null" ]; then
+            echo "Error: AMI ID not found!"
+            exit 1
+          fi
+          
+          echo "AMI ID: $AMI_ID"
+          
           TARGET_AWS_ACCOUNT="${{ secrets.AWS_DEMO_ACCOUNT_ID }}"
           echo "Target AWS Account: $TARGET_AWS_ACCOUNT"
 
