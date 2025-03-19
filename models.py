@@ -11,3 +11,10 @@ class HealthCheck(db.Model):
     datetime = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow
     )
+class FileMetadata(db.Model):     
+    __tablename__ = "files_metadata"      
+    id = db.Column(db.String(36), primary_key=True)  # UUID as primary key     
+    filename = db.Column(db.String(255), nullable=False)     
+    s3_key = db.Column(db.String(512), unique=True, nullable=False)  # S3 path     
+    s3_url = db.Column(db.String(1024), nullable=False)  # Public URL     
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

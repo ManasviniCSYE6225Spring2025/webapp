@@ -1,14 +1,22 @@
-from flask import Flask, make_response, request
-from models import db, HealthCheck  # Ensure you have a HealthCheck model in models.py
+from flask import Flask, make_response, request, jsonify
+from models import db, HealthCheck, FileMetadata   # Ensure you have a HealthCheck model in models.py
 from config import Config
 from sqlalchemy import create_engine, text
 import os
+import boto3
+from werkzeug.utils import secure_filename
+import uuid
+from datetime import datetime
 
 # Load database credentials from environment variables
 user = os.getenv("DB_USER")
 password = os.getenv("DB_PASSWORD")
 host = os.getenv("DB_HOST")
 db_name = os.getenv("DB_NAME")
+db_name = os.getenv("DB_NAME")
+
+# AWS S3 Configuration
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 
 # Flask app setup
 app = Flask(__name__)
@@ -73,6 +81,69 @@ def not_found(error):
 def method_not_allowed_handler(error):
     return "", 405
 
+# S3 Configuration
+s3 = boto3.client('s3')
+BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+ 
+#POST
+@app.route('/v1/file', methods=['POST'])
+def upload_file():
+    if 'profilePic' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files['profilePic']
+    filename = secure_filename(file.filename)
+    file_id = str(uuid.uuid4())  # Generate a unique file ID
+    user_id = "default-user"  # Placeholder, update as needed (e.g., from request)
+    s3_key = f"{BUCKET_NAME}/{user_id}/{file_id}_{filename}"
+
+    # Upload file to S3
+    s3.upload_fileobj(file, BUCKET_NAME, s3_key)
+    s3_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{s3_key}"
+
+    # Save metadata to database
+    new_file = FileMetadata(id=file_id,filename=filename, s3_key=s3_key, s3_url=s3_url, created_at=datetime.utcnow())
+    db.session.add(new_file)
+    db.session.commit()
+
+    return jsonify({
+        "file_name": filename,
+        "id": file_id,
+        "url": s3_key,
+        "upload_date": new_file.created_at.isoformat()
+    }), 201
+ 
+#GET
+@app.route('/v1/file/<string:file_id>', methods=['GET'])
+def get_file_metadata(file_id):
+    file_entry = FileMetadata.query.get(file_id)
+    
+    if not file_entry:
+        return jsonify({"error": "File not found"}), 404
+
+    return jsonify({
+        "file_name": file_entry.filename,
+        "id": file_entry.id,
+        "url": file_entry.s3_key,
+        "upload_date": file_entry.created_at.isoformat()
+    }), 200
+
+#DELETE
+@app.route('/v1/file/<string:file_id>', methods=['DELETE'])
+def delete_file(file_id):
+    file_entry = FileMetadata.query.get(file_id)
+    
+    if not file_entry:
+        return jsonify({"error": "File not found"}), 404
+
+    # Delete from S3
+    s3.delete_object(Bucket=BUCKET_NAME, Key=file_entry.s3_key)
+
+    # Delete metadata from database
+    db.session.delete(file_entry)
+    db.session.commit()
+
+    return "", 204  # No Content
 
 if __name__ == "__main__":
     create_database()  # Ensure the database exists
