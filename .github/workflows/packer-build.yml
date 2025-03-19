@@ -72,7 +72,7 @@ jobs:
 
       - name: Pass the AMI to Demo in AWS
         run: |
-          AMI_ID=$(aws ec2 describe-images --filters "Name=name,Values=${{ steps.create_image_name.outputs.IMAGE_NAME }}" --query "Images[0].ImageId" --output text)
+          AMI_NAME=$(jq -r '.builds[0].name' manifest.json)
           echo "AMI ID: $AMI_ID" 
 
           TARGET_AWS_ACCOUNT="${{ secrets.AWS_DEMO_ACCOUNT_ID }}"
