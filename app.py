@@ -55,17 +55,19 @@ formatter = CustomJsonFormatter()
 # logger.addHandler(file_handler)
 # logger.addHandler(stdout_handler)
 # logger.setLevel(logging.INFO)
-if os.name == 'posix':
+# Check if we are running in test mode
+IS_TESTING = os.getenv("IS_TESTING") == "1"
+
+if os.name == 'posix' and not IS_TESTING:
     log_dir = '/var/log/webapp'
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    json_log_handler = RotatingFileHandler(os.path.join(log_dir, 'requests.log'), maxBytes=10000, backupCount=1)
+    os.makedirs(log_dir, exist_ok=True)
+    log_file_path = os.path.join(log_dir, 'requests.log')
 else:
-    json_log_handler = RotatingFileHandler('requests.log', maxBytes=10000, backupCount=1)
+    log_file_path = 'requests.log'
 
-
+json_log_handler = RotatingFileHandler(log_file_path, maxBytes=10000, backupCount=1)
 json_log_handler.setFormatter(formatter)
-# app.logger.info("Testing logging permissions")
+
 logger.addHandler(json_log_handler)
 logger.setLevel(logging.INFO)
 
