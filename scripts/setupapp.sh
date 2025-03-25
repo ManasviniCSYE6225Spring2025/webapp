@@ -158,6 +158,8 @@ touch /opt/csye6225/.env
     # Ensure correct ownership and permissions
 sudo chown appuser:appgroup /opt/csye6225/.env
 sudo chmod 640 /opt/csye6225/.env
+sudo mkdir -p /var/log/webapp
+sudo chown -R appuser:appgroup /var/log/webapp
 
 echo ".env file created and permissions set."
 
