@@ -61,4 +61,6 @@ jobs:
           python manage.py db upgrade || echo "No migrations needed"
 
       - name: Run tests with verbose output
-        run: pytest -vv --capture=no tests/healthcheck_test.py
+        run: |
+          export IS_TESTING=1
+          pytest -vv --capture=no tests/healthcheck_test.py
