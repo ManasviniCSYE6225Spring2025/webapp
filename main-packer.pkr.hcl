@@ -95,12 +95,18 @@ build {
     destination = "/tmp/myapp.service"
   }
 
+  #file transfer of cloud_watch 
+   provisioner "file" {
+    source      = "cloudwatch-config.json"
+    destination = "/tmp/cloudwatch-config.json"
+  }
+
   # Copy setup script to the instance
   provisioner "file" {
     source      = "scripts/setupapp.sh"
     destination = "/tmp/setupapp.sh"
   }
-
+  
   # Run the setup script
   provisioner "shell" {
     inline = [
