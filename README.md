@@ -53,6 +53,8 @@ Once connected, verify the database hostname is passed in the user data script:
 cat /opt/csye6225/.env
 ```
 
+
+
 Expected Output:
 
 ```
