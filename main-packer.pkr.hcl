@@ -119,7 +119,7 @@ build {
   }
 
   # Run the setup script
-  
+
   provisioner "shell" {
     inline = [
       "chmod +x /tmp/setupapp.sh",
