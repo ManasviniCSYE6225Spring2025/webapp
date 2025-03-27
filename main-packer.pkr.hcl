@@ -95,10 +95,21 @@ build {
     destination = "/tmp/myapp.service"
   }
 
-  #file transfer of cloud_watch 
+  # Copy cloudwatch config only for AWS
   provisioner "file" {
     source      = "cloudwatch-config.json"
     destination = "/tmp/cloudwatch-config.json"
+    only        = ["amazon-ebs"]
+  }
+
+  # Install CloudWatch Agent only on AWS
+  provisioner "shell" {
+    inline = [
+      "curl -O https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
+      "sudo dpkg -i amazon-cloudwatch-agent.deb",
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/csye6225/cloudwatch-config.json -s"
+    ]
+    only = ["amazon-ebs"]
   }
 
   # Copy setup script to the instance
@@ -108,6 +119,7 @@ build {
   }
 
   # Run the setup script
+  
   provisioner "shell" {
     inline = [
       "chmod +x /tmp/setupapp.sh",
