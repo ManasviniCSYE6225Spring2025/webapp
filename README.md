@@ -227,6 +227,53 @@ Verify that the application starts automatically after an EC2 reboot.
 
 ---
 
+# CSYE6225 Web Application
+
+## Overview
+
+This is a Python Flask-based web application deployed on EC2. It provides REST APIs for file upload, retrieval, and deletion via AWS S3. The application includes:
+
+- ✅ Structured JSON logging sent to **AWS CloudWatch Logs**
+- 📈 Custom **CloudWatch Metrics** for monitoring API usage, database latency, and S3 interactions using **StatsD**
+
+---
+
+## Features
+
+### 🔒 REST APIs
+
+- `GET /healthz` – Health check
+- `POST /v1/file` – Upload file
+- `GET /v1/file/<file_id>` – Get file metadata
+- `DELETE /v1/file/<file_id>` – Delete file
+
+---
+
+## 🔧 Setup Overview
+
+### Prerequisites
+
+- AWS EC2 instance with IAM role having S3 + CloudWatch access
+- MySQL database (via AWS RDS)
+- StatsD + CloudWatch Agent installed and configured
+- CloudWatch Agent config file placed at `/opt/csye6225/cloudwatch-config.json`
+
+---
+
+## 📁 Logging
+
+### 🔹 Log Format
+
+All logs are in **JSON format** using `python-json-logger` with the following fields:
+
+```json
+{
+  "level": "INFO",
+  "time": "2025-03-26 15:32:00",
+  "message": "Health check passed and recorded to database"
+}
+
+
 ## **Submission Instructions**
 
 1. Create a directory named **`firstname_lastname_neuid_05`**.
