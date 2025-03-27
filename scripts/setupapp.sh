@@ -134,6 +134,24 @@ source menv/bin/activate || { echo "Error: Virtual environment activation failed
 echo "Installing Python dependencies..."
 pip install --no-cache-dir -r requirements.txt
 
+# Install CloudWatch Agent
+echo "Installing CloudWatch Agent..."
+curl -O https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+dpkg -i amazon-cloudwatch-agent.deb
+rm -f amazon-cloudwatch-agent.deb
+
+# # Copy the agent config
+# echo "Copying CloudWatch Agent config..."
+# cp /tmp/amazon-cloudwatch-agent.json /opt/cloudwatch-config.json
+
+# Start the agent
+echo "Starting CloudWatch Agent..."
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+    -a fetch-config \
+    -m ec2 \
+    -c file:/opt/csye6225/cloudwatch-config.json \
+    -s
+
 # Create an empty .env file
 touch /opt/csye6225/.env
 
