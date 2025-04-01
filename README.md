@@ -37,6 +37,8 @@ To destroy the infrastructure:
 terraform destroy -auto-approve
 ```
 
+
+
 ---
 
 ## Connecting to the EC2 Instance
