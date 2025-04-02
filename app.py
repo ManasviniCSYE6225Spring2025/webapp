@@ -35,7 +35,10 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         log_record['time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(record.created))
 
 formatter = CustomJsonFormatter()
+formatter.default_time_format = '%Y-%m-%dT%H:%M:%SZ'
 
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO) 
 # if os.name == 'posix':
 #     log_dir = '/var/log/webapp'
 #     os.makedirs(log_dir, exist_ok=True)
@@ -68,12 +71,34 @@ else:
 json_log_handler = RotatingFileHandler(log_file_path, maxBytes=10000, backupCount=1)
 json_log_handler.setFormatter(formatter)
 
+#json_log_handler.setLevel(logging.DEBUG) #new line
+
 logger.addHandler(json_log_handler)
 logger.setLevel(logging.INFO)
+#logger.setLevel(logging.DEBUG)  # new LINE
+
+# File handler (for CloudWatch)
+file_handler = RotatingFileHandler(log_file_path, maxBytes=5 * 1024 * 1024, backupCount=3)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.INFO)
+logger.addHandler(file_handler)
+
+# Console handler (for stdout — critical for development/debug)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+console_handler.setLevel(logging.INFO)
+logger.addHandler(console_handler)
+
 
 formatter.default_time_format = '%Y-%m-%dT%H:%M:%SZ'
 
 #load_dotenv()
+
+# Console (stdout) handler — this is what was missing
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+console_handler.setLevel(logging.INFO)  # Set this to DEBUG if needed
+logger.addHandler(console_handler)
 
 # StatsD client for emitting custom metrics
 statsd = StatsClient(host='localhost', port=8125, prefix='webapp')
@@ -264,6 +289,14 @@ def delete_file(file_id):
 
     finally:
         statsd.timing('api.file_delete.time', int((time.time() - api_start) * 1000))
+
+@app.route("/force-error")
+def force_error():
+    try:
+        raise ValueError("This is a test error!")
+    except Exception:
+        logger.error("Manually triggered error:\n%s", traceback.format_exc())
+        return "Intentional error triggered", 500
 
 if __name__ == "__main__":
     create_database()  # Ensure the database exists
