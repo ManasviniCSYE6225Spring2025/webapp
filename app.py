@@ -18,49 +18,31 @@ user = os.getenv("DB_USER")
 password = os.getenv("DB_PASSWORD")
 host = os.getenv("DB_HOST")
 db_name = os.getenv("DB_NAME")
-db_name = os.getenv("DB_NAME")
 
 # AWS S3 Configuration
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 
-logger = logging.getLogger()
 # Flask app setup
 app = Flask(__name__)
 
-# Structured JSON Logging Setup
+# StatsD client for emitting custom metrics
+statsd = StatsClient(host='localhost', port=8125, prefix='webapp')
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO) # Ensures INFO, WARNING, and ERROR logs are captured
+
+# Custom JSON Formatter
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     def add_fields(self, log_record, record, message_dict):
-        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        super().add_fields(log_record, record, message_dict)
         log_record['level'] = record.levelname
         log_record['time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(record.created))
 
 formatter = CustomJsonFormatter()
 formatter.default_time_format = '%Y-%m-%dT%H:%M:%SZ'
 
-# logger = logging.getLogger()
-# logger.setLevel(logging.INFO) 
-# if os.name == 'posix':
-#     log_dir = '/var/log/webapp'
-#     os.makedirs(log_dir, exist_ok=True)
-#     log_file_path = os.path.join(log_dir, 'requests.log')
-# else:
-#     log_file_path = 'requests.log'
-
-# file_handler = RotatingFileHandler(log_file_path, maxBytes=5*1024*1024, backupCount=3)
-# file_handler.setFormatter(formatter)
-# file_handler.setLevel(logging.INFO)
-
-# stdout_handler = logging.StreamHandler(sys.stdout)
-# stdout_handler.setFormatter(formatter)
-# stdout_handler.setLevel(logging.INFO)
-
-# logger = logging.getLogger()
-# logger.addHandler(file_handler)
-# logger.addHandler(stdout_handler)
-# logger.setLevel(logging.INFO)
-# Check if we are running in test mode
+# Determine log file path
 IS_TESTING = os.getenv("IS_TESTING") == "1"
-
 if os.name == 'posix' and not IS_TESTING:
     log_dir = '/var/log/webapp'
     os.makedirs(log_dir, exist_ok=True)
@@ -68,41 +50,17 @@ if os.name == 'posix' and not IS_TESTING:
 else:
     log_file_path = 'requests.log'
 
-json_log_handler = RotatingFileHandler(log_file_path, maxBytes=10000, backupCount=1)
-json_log_handler.setFormatter(formatter)
-
-#json_log_handler.setLevel(logging.DEBUG) #new line
-
-logger.addHandler(json_log_handler)
-logger.setLevel(logging.INFO)
-#logger.setLevel(logging.DEBUG)  # new LINE
-
-# File handler (for CloudWatch)
+# File Handler (Logs to file)
 file_handler = RotatingFileHandler(log_file_path, maxBytes=5 * 1024 * 1024, backupCount=3)
 file_handler.setFormatter(formatter)
 file_handler.setLevel(logging.INFO)
 logger.addHandler(file_handler)
 
-# Console handler (for stdout — critical for development/debug)
+# Console Handler (Logs to terminal)
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setFormatter(formatter)
 console_handler.setLevel(logging.INFO)
 logger.addHandler(console_handler)
-
-
-formatter.default_time_format = '%Y-%m-%dT%H:%M:%SZ'
-
-#load_dotenv()
-
-# Console (stdout) handler — this is what was missing
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setFormatter(formatter)
-console_handler.setLevel(logging.INFO)  # Set this to DEBUG if needed
-logger.addHandler(console_handler)
-
-# StatsD client for emitting custom metrics
-statsd = StatsClient(host='localhost', port=8125, prefix='webapp')
-
 
 app.config.from_object(Config)
 db.init_app(app)
