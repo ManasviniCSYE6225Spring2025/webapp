@@ -125,10 +125,12 @@ def method_not_allowed():
 # Custom error handlers
 @app.errorhandler(404)
 def not_found(error):
+    logger.error(f"[{request.method} {request.path}] 404 Not Found - no matching route")
     return "", 404
 
 @app.errorhandler(405)
 def method_not_allowed_handler(error):
+    logger.error(f"[{request.method} {request.path}] 405 Method Not Allowed - method not supported on this route")
     return "", 405
 
 # S3 Configuration
@@ -248,13 +250,13 @@ def delete_file(file_id):
     finally:
         statsd.timing('api.file_delete.time', int((time.time() - api_start) * 1000))
 
-@app.route("/force-error")
-def force_error():
-    try:
-        raise ValueError("This is a test error!")
-    except Exception:
-        logger.error("Manually triggered error:\n%s", traceback.format_exc())
-        return "Intentional error triggered", 500
+# @app.route("/force-error")
+# def force_error():
+#     try:
+#         raise ValueError("This is a test error!")
+#     except Exception:
+#         logger.error("Manually triggered error:\n%s", traceback.format_exc())
+#         return "Intentional error triggered", 500
 
 if __name__ == "__main__":
     create_database()  # Ensure the database exists
