@@ -110,11 +110,23 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
           aws-region: us-east-1
+     
+
+      - name: Fetch Infra Metadata from AWS Secrets Manager
+        id: fetch_infra_metadata
+        run: |
+            SECRET=$(aws secretsmanager get-secret-value \
+            --secret-id infra-secret \
+            --region us-east-1 \
+            --query SecretString \
+            --output text)
+
+            echo "$SECRET" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
 
       - name: Get Launch Template ID by Name
         id: get_launch_template_id
         run: |
-          LT_NAME="csye6225-asg-lt" 
+          LT_NAME="${{ env.launch_template_name }}" 
           LT_ID=$(aws ec2 describe-launch-templates \
             --filters "Name=launch-template-name,Values=$LT_NAME" \
             --query "LaunchTemplates[0].LaunchTemplateId" \
@@ -162,7 +174,7 @@ jobs:
       - name: Start Instance Refresh on ASG
         id: start_refresh
         run: |
-          ASG_NAME="csye6225-asg" 
+          ASG_NAME="${{ env.asg_name }}" 
           REFRESH_ID=$(aws autoscaling start-instance-refresh \
             --auto-scaling-group-name "$ASG_NAME" \
             --strategy Rolling \
@@ -172,7 +184,7 @@ jobs:
 
       - name: Wait for Instance Refresh to Complete
         run: |
-          ASG_NAME="csye6225-asg" 
+          ASG_NAME="${{ env.asg_name }}" 
           REFRESH_ID="${{ env.REFRESH_ID }}"
           echo "Waiting for instance refresh ($REFRESH_ID) to complete..."
 
