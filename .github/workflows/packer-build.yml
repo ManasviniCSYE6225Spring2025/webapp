@@ -155,8 +155,8 @@ jobs:
          aws ec2 modify-launch-template \
          --launch-template-id "$LAUNCH_TEMPLATE_ID" \
          --default-version "$LATEST_VERSION"
-         env:
-           LAUNCH_TEMPLATE_ID: ${{ env.LAUNCH_TEMPLATE_ID }}
+        env:
+          LAUNCH_TEMPLATE_ID: ${{ env.LAUNCH_TEMPLATE_ID }}
 
 
       - name: Start Instance Refresh on ASG
