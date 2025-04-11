@@ -115,14 +115,14 @@ jobs:
       - name: Fetch Infra Metadata from AWS Secrets Manager
         id: fetch_infra_metadata
         run: |
-            SECRET=$(aws secretsmanager get-secret-value \
-            --secret-id infra-secret \
+          SECRET=$(aws secretsmanager get-secret-value \
+            --secret-id "${{ secrets.INFRA_SECRET_ID }}" \
             --region us-east-1 \
             --query SecretString \
             --output text)
-
-            echo "$SECRET" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
-
+      
+          echo "$SECRET" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
+        
       - name: Get Launch Template ID by Name
         id: get_launch_template_id
         run: |
