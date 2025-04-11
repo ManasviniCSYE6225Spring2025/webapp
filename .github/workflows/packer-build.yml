@@ -66,9 +66,14 @@ jobs:
       - name: Initialize Packer
         run: packer init .
 
+      # - name: Build Packer Image for AWS and GCP
+      #   run: |
+      #     packer build -var "aws_region=us-east-1" -var "gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" .
       - name: Build Packer Image for AWS and GCP
         run: |
-          packer build -var "aws_region=us-east-1" -var "gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" .
+            packer build -machine-readable -var "aws_region=us-east-1" -var "gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" . | tee build.log
+            packer manifest build.log > image_manifest.json
+
 
       - name: Pass the AMI to Demo in AWS
         run: |
@@ -98,4 +103,83 @@ jobs:
 
           # Verify snapshot sharing
           aws ec2 describe-snapshot-attribute --snapshot-id $SNAPSHOT_ID --attribute createVolumePermission
-  
+      
+      - name: Switch to DEMO AWS Account
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
+          aws-region: us-east-1
+
+      - name: Create New Launch Template Version
+        id: create_lt_version
+        run: |
+          LAUNCH_TEMPLATE_ID="lt-0d8d49904527db4dd"  # <-- Replace this with your Launch Template ID
+          AMI_ID=$(jq -r '[.builds[] | select(.builder_type=="amazon-ebs")] | max_by(.build_time) | .artifact_id' image_manifest.json | cut -d':' -f2)
+
+          echo "Using AMI ID: $AMI_ID to create new Launch Template version..."
+          
+          aws ec2 create-launch-template-version \
+            --launch-template-id "$LAUNCH_TEMPLATE_ID" \
+            --source-version 1 \
+            --version-description "Updated version with AMI $AMI_ID" \
+            --launch-template-data "{\"ImageId\":\"$AMI_ID\"}"
+
+      # - name: Set Default Launch Template Version
+      #   run: |
+      #     aws ec2 modify-launch-template \
+      #       --launch-template-id lt-xxxxxxxxxxxxxxxxx  # <-- Replace this too
+      #       --default-version $Latest
+
+      - name: Set Default Launch Template Version
+        run: |
+         LAUNCH_TEMPLATE_ID="lt-0d8d49904527db4dd"  # <-- Replace this with your actual Launch Template ID
+         LATEST_VERSION=$(aws ec2 describe-launch-template-versions \
+         --launch-template-id "$LAUNCH_TEMPLATE_ID" \
+         --query 'LaunchTemplateVersions | sort_by(@, &VersionNumber)[-1].VersionNumber' \
+         --output text)
+
+         echo "Setting default version to: $LATEST_VERSION"
+
+         aws ec2 modify-launch-template \
+         --launch-template-id "$LAUNCH_TEMPLATE_ID" \
+         --default-version "$LATEST_VERSION"
+
+
+      - name: Start Instance Refresh on ASG
+        id: start_refresh
+        run: |
+          ASG_NAME="csye6225-asg" 
+          REFRESH_ID=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name "$ASG_NAME" \
+            --strategy Rolling \
+            --query "InstanceRefreshId" --output text)
+          echo "REFRESH_ID=$REFRESH_ID" >> $GITHUB_ENV
+          echo "Started instance refresh with ID: $REFRESH_ID"
+
+      - name: Wait for Instance Refresh to Complete
+        run: |
+          ASG_NAME="csye6225-asg"  # <-- Same name here
+          REFRESH_ID="${{ env.REFRESH_ID }}"
+          echo "Waiting for instance refresh ($REFRESH_ID) to complete..."
+
+          while true; do
+            STATUS=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name "$ASG_NAME" \
+              --query "InstanceRefreshes[?InstanceRefreshId=='$REFRESH_ID'].Status" \
+              --output text)
+
+            echo "Current refresh status: $STATUS"
+
+            if [[ "$STATUS" == "Successful" ]]; then
+              echo "✅ Instance refresh completed successfully."
+              exit 0
+            elif [[ "$STATUS" == "Failed" ]]; then
+              echo "❌ Instance refresh failed!"
+              exit 1
+            fi
+
+            echo "⏳ Waiting 30 seconds before checking again..."
+            sleep 30
+          done
+
