@@ -37,6 +37,14 @@ echo "Installing required packages..."
 export DEBIAN_FRONTEND=noninteractive  # Suppress password prompt
 apt install -y python3 python3-pip python3-venv unzip pkg-config 
 
+# Install AWS CLI and jq if not already installed
+echo "Installing AWS CLI and jq..."
+sudo apt update && sudo apt install -y unzip curl jq
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip
+sudo ./aws/install
+/usr/local/bin/aws --version
+rm -rf awscliv2.zip aws
+
 # Check if installations were successful
 # check_package "mysql"
 check_package "python3"
