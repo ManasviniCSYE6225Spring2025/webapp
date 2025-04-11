@@ -82,7 +82,7 @@ source "googlecompute" "gcp_image" {
 }
 
 build {
-  sources = ["source.amazon-ebs.aws_image", "source.googlecompute.gcp_image"]
+  sources = ["source.amazon-ebs.aws_image"]
 
   provisioner "file" {
     source      = "webapp.zip"
