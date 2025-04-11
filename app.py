@@ -288,7 +288,7 @@ def cicd():
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 @app.route('/cicd', methods=['POST', 'PUT', 'DELETE', 'PATCH'])
-def method_not_allowed():
+def method_not_allowed_cicd():
     return make_response("", 405)  # Method Not Allowed
 
 
