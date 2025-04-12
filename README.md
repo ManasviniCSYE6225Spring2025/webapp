@@ -273,7 +273,33 @@ All logs are in **JSON format** using `python-json-logger` with the following fi
   "level": "INFO",
   "time": "2025-03-26 15:32:00",
   "message": "Health check passed and recorded to database"
+
 }
+
+✅ Automated AMI Builds with Packer
+A custom AMI is built using Packer, containing pre-installed dependencies, CloudWatch agent, and application setup — improving consistency and reducing launch time.
+
+✅ GitHub Actions CI/CD Integration
+
+Automates the Packer build, image upload, and launch template update.
+
+Uses GitHub Variables for config (like RDS instance ID and secret name) and GitHub Secrets for credentials.
+
+✅ Launch Template Versioning
+After a new AMI is created, the pipeline creates a new Launch Template version, inheriting existing settings like user_data, and updates the default version to use the latest AMI.
+
+✅ Demo Environment Deployment via Cross-Account Access
+The newly created AMI is shared from the Dev AWS account to the Demo account securely using AWS CLI. This supports seamless environment promotion.
+
+✅ Auto Scaling Group Instance Refresh
+Once the Launch Template is updated in the Demo account, the pipeline triggers an Instance Refresh on the ASG using the updated Launch Template version — rolling out new EC2 instances automatically.
+
+✅ User Data Dynamic Configuration
+The user_data script fetches credentials (DB username/password) and service config from AWS Secrets Manager, and writes them to /opt/csye6225/.env on instance startup.
+
+✅ No Downtime Deployments
+By combining Launch Template versioning and ASG instance refresh, deployments are now zero-downtime with minimal manual intervention.
+
 
 
 ## **Submission Instructions**
