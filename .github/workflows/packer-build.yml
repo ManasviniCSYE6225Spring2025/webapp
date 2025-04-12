@@ -10,6 +10,17 @@ jobs:
     name: Build Packer Image for AWS and GCP
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        ports:
+          - 3306:3306
+
     permissions:
       id-token: write
       contents: read
@@ -53,6 +64,47 @@ jobs:
         run: |
           echo "Running integration tests..."
           # Add integration test commands here
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+  
+      - name: Install dependencies for testing
+        run: |
+          pip install -r requirements.txt
+
+      - name: Set environment variables for testing
+        run: |
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> $GITHUB_ENV
+          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
+          echo "DATABASE_URL=mysql+pymysql://${{ secrets.MYSQL_USER }}:${{ secrets.MYSQL_PASSWORD }}@127.0.0.1:3306/${{ secrets.MYSQL_DATABASE }}" >> $GITHUB_ENV
+
+      - name: Verify Secrets (Debugging) for testing
+        run: |
+          echo "MYSQL_DATABASE: $MYSQL_DATABASE"
+          echo "MYSQL_USER: $MYSQL_USER"
+          echo "MYSQL_PASSWORD: [HIDDEN]"
+          echo "MYSQL_ROOT_PASSWORD: [HIDDEN]"
+          echo "DATABASE_URL: $DATABASE_URL"
+
+      - name: Wait for MySQL to be ready for testing
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -u $MYSQL_USER --password=$MYSQL_PASSWORD --silent; do
+            echo "Waiting for database connection..."
+            sleep 5
+          done
+
+      - name: Run database migrations for testing
+        run: |
+          python manage.py db upgrade || echo "No migrations needed"
+
+      - name: Run tests with verbose output as part of testing
+        run: |
+          export IS_TESTING=1
+          pytest -vv --capture=no tests/healthcheck_test.py
 
       - name: Build Application Artifact
         run: |
