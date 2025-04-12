@@ -276,29 +276,108 @@ All logs are in **JSON format** using `python-json-logger` with the following fi
 
 }
 
+
+🧱 CI/CD, AMI & Deployment Enhancements
 ✅ Automated AMI Builds with Packer
-A custom AMI is built using Packer, containing pre-installed dependencies, CloudWatch agent, and application setup — improving consistency and reducing launch time.
+A custom AMI is built using Packer, which includes:
 
+Python dependencies pre-installed
+
+CloudWatch Agent pre-configured
+
+Flask app set up in /opt/csye6225
+
+This improves consistency and reduces launch time.
+
+bash
+Copy
+Edit
+packer build -var "aws_region=us-east-1" .
 ✅ GitHub Actions CI/CD Integration
+The pipeline is defined in .github/workflows/packer-build.yml and performs:
 
-Automates the Packer build, image upload, and launch template update.
+Automated test runs with pytest
 
-Uses GitHub Variables for config (like RDS instance ID and secret name) and GitHub Secrets for credentials.
+Integration with MySQL container as service
 
+Secure secrets using secrets.*
+
+AMI creation and packaging:
+
+yaml
+Copy
+Edit
+- name: Build Application Artifact
+  run: zip -r webapp.zip .
 ✅ Launch Template Versioning
-After a new AMI is created, the pipeline creates a new Launch Template version, inheriting existing settings like user_data, and updates the default version to use the latest AMI.
+A new version of the Launch Template is created automatically using:
 
+bash
+Copy
+Edit
+aws ec2 create-launch-template-version \
+  --launch-template-id $LAUNCH_TEMPLATE_ID \
+  --source-version 1 \
+  --version-description "Updated with new AMI" \
+  --launch-template-data "{\"ImageId\":\"$AMI_ID\"}"
+Then set as the default:
+
+bash
+Copy
+Edit
+aws ec2 modify-launch-template \
+  --launch-template-id $LAUNCH_TEMPLATE_ID \
+  --default-version $LATEST_VERSION
 ✅ Demo Environment Deployment via Cross-Account Access
-The newly created AMI is shared from the Dev AWS account to the Demo account securely using AWS CLI. This supports seamless environment promotion.
+The new AMI is securely shared with the Demo account:
 
+bash
+Copy
+Edit
+aws ec2 modify-image-attribute --image-id $AMI_ID \
+  --launch-permission "Add=[{UserId=$DEMO_ACCOUNT_ID}]"
+Also shares the snapshot:
+
+bash
+Copy
+Edit
+aws ec2 modify-snapshot-attribute --snapshot-id $SNAPSHOT_ID \
+  --attribute createVolumePermission --operation-type add \
+  --user-ids $DEMO_ACCOUNT_ID
 ✅ Auto Scaling Group Instance Refresh
-Once the Launch Template is updated in the Demo account, the pipeline triggers an Instance Refresh on the ASG using the updated Launch Template version — rolling out new EC2 instances automatically.
+After updating the Launch Template, an Instance Refresh is triggered:
+
+bash
+Copy
+Edit
+aws autoscaling start-instance-refresh \
+  --auto-scaling-group-name "$ASG_NAME" \
+  --strategy Rolling
+This ensures new EC2 instances are launched using the latest AMI.
 
 ✅ User Data Dynamic Configuration
-The user_data script fetches credentials (DB username/password) and service config from AWS Secrets Manager, and writes them to /opt/csye6225/.env on instance startup.
+The EC2 user data script retrieves secrets from AWS Secrets Manager:
 
+bash
+Copy
+Edit
+aws secretsmanager get-secret-value --secret-id $INFRA_SECRET_ID
+Then writes them to the app environment:
+
+bash
+Copy
+Edit
+echo "DB_HOST='...'" >> /opt/csye6225/.env
 ✅ No Downtime Deployments
-By combining Launch Template versioning and ASG instance refresh, deployments are now zero-downtime with minimal manual intervention.
+By combining Launch Template versioning and ASG Instance Refresh, deployments happen with:
+
+Zero downtime
+
+Rolling EC2 instance replacements
+
+Minimal manual intervention
+
+✅ This ensures your production environment stays highly available during updates.
 
 
 
