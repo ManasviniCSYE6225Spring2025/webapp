@@ -251,46 +251,6 @@ def delete_file(file_id):
         statsd.timing('api.file_delete.time', int((time.time() - api_start) * 1000))
 
 
-# # CI/CD Check endpoint
-# @app.route('/cicd', methods=['GET'])
-# def cicd():
-#     start_time = time.time()
-#     # statsd.incr('api.healthz.count')
-#     # Check for a request payload
-#     if request.data:
-#         logger.warning("Health check failed: unexpected request body")
-#         return make_response("", 400)  # Bad Request
-
-#     # Check for query parameters
-#     if request.args:
-#         logger.warning("Health check failed: unexpected query parameters")
-#         return make_response("", 400)  # Bad Request
-
-#     try:
-#         # Insert a new health check record
-#         db_start = time.time()
-#         health_entry = HealthCheck()
-#         db.session.add(health_entry)
-#         db.session.commit()
-#         # statsd.timing('db.healthz.insert', int((time.time() - db_start) * 1000))
-
-#         # Return HTTP 200 if successful
-#         logger.info("Health check passed and recorded to database")
-#         response = make_response("", 200)
-#     except Exception:
-#         # Return HTTP 503 if there is an error
-#         logger.error("Health check failed:\n%s", traceback.format_exc())
-#         response = make_response("", 503)
-#     # statsd.timing('api.healthz.time', int((time.time() - start_time) * 1000))
-#     # Set cache-control headers
-#     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-#     response.headers["Pragma"] = "no-cache"
-#     response.headers["X-Content-Type-Options"] = "nosniff"
-#     return response
-# @app.route('/cicd', methods=['POST', 'PUT', 'DELETE', 'PATCH'])
-# def method_not_allowed_cicd():
-#     return make_response("", 405)  # Method Not Allowed
-
 if __name__ == "__main__":
     create_database()  # Ensure the database exists
     initialize_tables()  # Create tables
