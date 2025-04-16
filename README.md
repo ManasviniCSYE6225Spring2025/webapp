@@ -37,8 +37,6 @@ To destroy the infrastructure:
 terraform destroy -auto-approve
 ```
 
-
-
 ---
 
 ## Connecting to the EC2 Instance
@@ -54,8 +52,6 @@ Once connected, verify the database hostname is passed in the user data script:
 ```bash
 cat /opt/csye6225/.env
 ```
-
-
 
 Expected Output:
 
